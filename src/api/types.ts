@@ -30,7 +30,19 @@ export type MessageData = {
   typeMessage: string
   textMessageData?: { textMessage: string }
   // Carries the text of both extendedTextMessage and quotedMessage.
-  extendedTextMessageData?: { text: string }
+  extendedTextMessageData?: {
+    text: string
+    description?: string
+    title?: string
+    jpegThumbnail?: string
+    isForwarded?: boolean
+    forwardingScore?: number
+    // Set on quotedMessage: the id of the quoted message and its chat.
+    stanzaId?: string
+    participant?: string
+  }
+  // Non-text types bring their own payload, e.g. fileMessageData.
+  [field: string]: unknown
 }
 
 export type MessageNotification = {
