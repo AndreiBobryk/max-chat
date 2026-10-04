@@ -1,0 +1,27 @@
+/* Placeholder values: replaced with the ones taken from web.max.ru screenshots. */
+:root {
+  --color-bg: #f2f3f5;
+  --color-surface: #ffffff;
+  --color-border: #e3e5e8;
+  --color-text: #1c1d1f;
+  --color-text-muted: #7f8185;
+  --color-accent: #2f6bff;
+  --color-accent-text: #ffffff;
+  --color-bubble-in: #ffffff;
+  --color-bubble-out: #d6e4ff;
+  --color-danger: #d93025;
+
+  --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-size: 15px;
+  --font-size-small: 12px;
+  --line-height: 1.35;
+
+  --radius-small: 8px;
+  --radius-bubble: 16px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+
+  --sidebar-width: 360px;
+}
