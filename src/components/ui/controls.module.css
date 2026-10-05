@@ -1,0 +1,54 @@
+/* Form controls shared by the login screen and the dialogs. */
+.label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.field {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-field);
+  background: var(--color-surface-muted);
+}
+
+.field::placeholder {
+  color: var(--color-text-muted);
+}
+
+.field:focus-visible {
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+  outline: none;
+}
+
+.field[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.fieldError {
+  margin: 6px 0 0;
+  color: var(--color-danger);
+  font-size: var(--font-size-small);
+}
+
+.primaryButton {
+  width: 100%;
+  height: 42px;
+  border: 0;
+  border-radius: var(--radius-field);
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  font-weight: 600;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.primaryButton:disabled {
+  opacity: 0.5;
+}

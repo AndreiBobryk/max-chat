@@ -1,27 +1,35 @@
-/* Placeholder values: replaced with the ones taken from web.max.ru screenshots. */
+/* Taken from a web.max.ru screenshot; bubble colours are a guess, the screenshot had no messages. */
 :root {
-  --color-bg: #f2f3f5;
   --color-surface: #ffffff;
-  --color-border: #e3e5e8;
-  --color-text: #1c1d1f;
-  --color-text-muted: #7f8185;
-  --color-accent: #2f6bff;
+  --color-surface-muted: #f0f2f5;
+  --color-surface-hover: #f5f7fa;
+  --color-surface-selected: #e8f0fb;
+  --color-border: #e7e9ed;
+  --color-text: #17181a;
+  --color-text-muted: #7f8793;
+  --color-accent: #0077ff;
+  --color-accent-hover: #0068e0;
   --color-accent-text: #ffffff;
+  --color-danger: #e5484d;
   --color-bubble-in: #ffffff;
-  --color-bubble-out: #d6e4ff;
-  --color-danger: #d93025;
+  --color-bubble-out: #d8eaff;
+  --color-pill: rgb(42 94 170 / 0.42);
+  --color-pill-text: #ffffff;
+  --color-card: rgb(255 255 255 / 0.8);
 
-  --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-  --font-size: 15px;
-  --font-size-small: 12px;
+  --chat-gradient: linear-gradient(175deg, #7fb1f2 0%, #7cb9ec 50%, #90d1d9 100%);
+
+  --font-family: Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-size: 14px;
+  --font-size-small: 13px;
+  --font-size-tiny: 11px;
   --line-height: 1.35;
 
-  --radius-small: 8px;
+  --radius-field: 10px;
+  --radius-card: 16px;
   --radius-bubble: 16px;
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
 
-  --sidebar-width: 360px;
+  --sidebar-width: 320px;
+  --header-height: 56px;
+  --chat-column-width: 640px;
 }

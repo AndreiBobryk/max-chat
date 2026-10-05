@@ -1,0 +1,55 @@
+.scroller {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Few messages sit at the bottom, next to the input, as in any messenger. */
+.list {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 100%;
+  max-width: var(--chat-column-width);
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 12px 16px;
+}
+
+.day {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 4px;
+}
+
+.pill {
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: var(--color-pill);
+  color: var(--color-pill-text);
+  font-size: var(--font-size-tiny);
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.emptyCard {
+  align-self: center;
+  width: 250px;
+  margin-bottom: 8px;
+  padding: 20px 16px;
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-weight: 700;
+}
+
+.emptyText {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-tiny);
+}

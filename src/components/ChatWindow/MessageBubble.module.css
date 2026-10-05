@@ -1,0 +1,78 @@
+.row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.row[data-direction='out'] {
+  align-items: flex-end;
+}
+
+.bubble {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 2px 10px;
+  max-width: min(78%, 480px);
+  padding: 7px 10px 6px 12px;
+  border-radius: var(--radius-bubble);
+  background: var(--color-bubble-in);
+  box-shadow: 0 1px 1px rgb(20 50 100 / 0.12);
+}
+
+.row[data-direction='in'] .bubble {
+  border-bottom-left-radius: 6px;
+}
+
+.row[data-direction='out'] .bubble {
+  border-bottom-right-radius: 6px;
+  background: var(--color-bubble-out);
+}
+
+.text,
+.unsupported {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.unsupported {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.meta {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-tiny);
+  line-height: 16px;
+}
+
+.status {
+  display: inline-flex;
+}
+
+.status[data-status='read'] {
+  color: var(--color-accent);
+}
+
+.status[data-status='failed'] {
+  color: var(--color-danger);
+}
+
+.error {
+  max-width: min(78%, 480px);
+  margin: 3px 4px 0;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.85);
+  color: var(--color-danger);
+  font-size: var(--font-size-tiny);
+  text-align: right;
+}

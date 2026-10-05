@@ -12,11 +12,12 @@ body,
 
 body {
   margin: 0;
-  background: var(--color-bg);
+  background: var(--color-surface);
   color: var(--color-text);
   font-family: var(--font-family);
   font-size: var(--font-size);
   line-height: var(--line-height);
+  -webkit-font-smoothing: antialiased;
 }
 
 button,
@@ -24,4 +25,26 @@ input,
 textarea {
   font: inherit;
   color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* The patterned backdrop shared by the login screen and the conversation. */
+.chat-background {
+  background-color: #7fb6ee;
+  background-image: url('../assets/chat-pattern.svg'), var(--chat-gradient);
+  background-size:
+    180px 180px,
+    cover;
 }
