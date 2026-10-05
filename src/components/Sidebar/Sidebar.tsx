@@ -4,6 +4,7 @@ import { useChat } from '../../state/chat.ts'
 import { useSession } from '../../state/session.ts'
 import { LogoutIcon, PlusIcon } from '../ui/icons.tsx'
 import { ChatList } from './ChatList.tsx'
+import { ConnectionStatus } from './ConnectionStatus.tsx'
 import styles from './Sidebar.module.css'
 
 type SidebarProps = {
@@ -32,6 +33,7 @@ export function Sidebar({ now, onNewChat, newChatButtonRef }: SidebarProps) {
           <PlusIcon size={18} />
         </button>
       </header>
+      <ConnectionStatus />
 
       {chats.length === 0 ? (
         <p className={styles.empty}>

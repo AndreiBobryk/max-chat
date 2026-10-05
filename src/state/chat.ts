@@ -8,6 +8,11 @@ export type ChatContextValue = {
   selectChat: (key: string | null) => void
   sendMessage: (chatKey: string, text: string) => void
   retryMessage: (localId: string) => void
+  // The instance state last reported by a notification; null until one arrives.
+  instanceState: string | null
+  // The description from the last quota notification; null when there is none to show.
+  quotaNotice: string | null
+  dismissQuotaNotice: () => void
 }
 
 export const ChatContext = createContext<ChatContextValue | null>(null)

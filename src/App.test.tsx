@@ -3,8 +3,9 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.tsx'
+import { saveSession } from './state/storage.ts'
 import { fakeGreenApi } from './test/fakeGreenApi.ts'
-import { incomingText } from './test/fixtures/notifications.ts'
+import { incomingText, quotaExceeded, stateChanged } from './test/fixtures/notifications.ts'
 import { server } from './test/server.ts'
 
 const ALLOWED_METHODS = /\/waInstance\d+\/(sendMessage|receiveNotification|deleteNotification)\//
@@ -144,6 +145,81 @@ describe('App', () => {
 
     expect(within(item).queryByLabelText(/Непрочитанных/)).not.toBeInTheDocument()
     expect(within(screen.getByRole('log')).getByText('Привет')).toBeInTheDocument()
+  })
+
+  it('offers to retry a message that failed and sends it again', async () => {
+    const api = fakeGreenApi()
+    api.onSend(() => new HttpResponse(null, { status: 502 }))
+    const user = await signIn(api)
+    await createChat(user, '79876543210')
+
+    await user.type(screen.getByRole('textbox', { name: 'Сообщение' }), 'Тест{Enter}')
+    const log = screen.getByRole('log', { name: 'Сообщения' })
+    expect(await within(log).findByText('Сервис временно недоступен')).toBeInTheDocument()
+    expect(within(log).getByRole('img', { name: 'Не отправлено' })).toBeInTheDocument()
+
+    api.onSend(() => HttpResponse.json({ idMessage: 'out-retry' }))
+    await user.click(within(log).getByRole('button', { name: 'Повторить' }))
+
+    await within(log).findByRole('img', { name: 'Отправлено' })
+    expect(within(log).getAllByText('Тест')).toHaveLength(1)
+    expect(within(log).queryByRole('button', { name: 'Повторить' })).not.toBeInTheDocument()
+    expect(api.count('sendMessage')).toBe(2)
+  })
+
+  it('says when the connection is lost and stops saying so when it is back', async () => {
+    const api = fakeGreenApi()
+    let isOffline = false
+    // Returning nothing passes the request on to the fake API.
+    server.use(
+      http.all(`${api.apiUrl}/*`, () => (isOffline ? HttpResponse.error() : undefined)),
+    )
+    await signIn(api)
+    const status = screen.getByRole('status')
+    expect(status).toBeEmptyDOMElement()
+
+    isOffline = true
+    await waitFor(() => expect(status).toHaveTextContent('Нет соединения, переподключаемся…'))
+    expect(screen.getByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
+
+    isOffline = false
+    await waitFor(() => expect(status).toBeEmptyDOMElement(), { timeout: 5000 })
+  })
+
+  it('says that it is connecting while a saved session is being resumed', async () => {
+    const api = fakeGreenApi()
+    saveSession({ ...api.credentials, apiUrl: api.apiUrl })
+
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Подключение…')
+    await waitFor(() => expect(screen.getByRole('status')).toBeEmptyDOMElement())
+  })
+
+  it('warns while the instance is not authorized', async () => {
+    const api = fakeGreenApi()
+    await signIn(api)
+
+    api.notify(stateChanged)
+    expect(await screen.findByRole('alert')).toHaveTextContent('Инстанс не авторизован в MAX')
+
+    api.notify({ ...stateChanged, stateInstance: 'authorized' })
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
+  })
+
+  it('shows a quota warning that can be dismissed', async () => {
+    const api = fakeGreenApi()
+    const user = await signIn(api)
+
+    api.notify(quotaExceeded)
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Лимит тарифа Developer: 3 чата в месяц')
+    expect(alert).toHaveTextContent(quotaExceeded.quotaData.description)
+
+    await user.click(screen.getByRole('button', { name: 'Скрыть уведомление' }))
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
   it('returns to the login form and stops polling on sign-out', async () => {

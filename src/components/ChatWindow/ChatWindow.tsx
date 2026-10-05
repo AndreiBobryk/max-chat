@@ -7,6 +7,7 @@ import { ArrowLeftIcon } from '../ui/icons.tsx'
 import styles from './ChatWindow.module.css'
 import { MessageInput } from './MessageInput.tsx'
 import { MessageList } from './MessageList.tsx'
+import { Notices } from './Notices.tsx'
 
 type ConversationProps = {
   chat: Chat
@@ -14,10 +15,11 @@ type ConversationProps = {
   now: number
   onClose: () => void
   onSend: (text: string) => void
+  onRetry: (localId: string) => void
 }
 
 // Mounted per chat (see the key below), so the draft and the scroll position start fresh.
-function Conversation({ chat, messages, now, onClose, onSend }: ConversationProps) {
+function Conversation({ chat, messages, now, onClose, onSend, onRetry }: ConversationProps) {
   return (
     <>
       <header className={styles.header}>
@@ -30,18 +32,19 @@ function Conversation({ chat, messages, now, onClose, onSend }: ConversationProp
           {chat.name && chat.phone && <p className={styles.subtitle}>{formatPhone(chat.phone)}</p>}
         </div>
       </header>
-      <MessageList messages={messages} now={now} />
+      <MessageList messages={messages} now={now} onRetry={onRetry} />
       <MessageInput onSend={onSend} />
     </>
   )
 }
 
 export function ChatWindow({ now }: { now: number }) {
-  const { state, selectChat, sendMessage } = useChat()
+  const { state, selectChat, sendMessage, retryMessage } = useChat()
   const chat = state.activeChatKey === null ? undefined : state.chats[state.activeChatKey]
 
   return (
     <main className={`${styles.window} chat-background`}>
+      <Notices />
       {chat && (
         <Conversation
           key={chat.key}
@@ -50,6 +53,7 @@ export function ChatWindow({ now }: { now: number }) {
           now={now}
           onClose={() => selectChat(null)}
           onSend={(text) => sendMessage(chat.key, text)}
+          onRetry={retryMessage}
         />
       )}
     </main>

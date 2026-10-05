@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 import type { Message, OutgoingStatus } from '../../domain/chatReducer.ts'
 import { MessageList } from './MessageList.tsx'
 
@@ -33,7 +34,9 @@ function outgoing(status: OutgoingStatus = 'sent', overrides: Partial<Message> =
 }
 
 function renderList(messages: Message[]) {
-  return render(<MessageList messages={messages} now={NOW} />)
+  const onRetry = vi.fn()
+  const view = render(<MessageList messages={messages} now={NOW} onRetry={onRetry} />)
+  return { ...view, onRetry }
 }
 
 const rowOf = (text: string) => screen.getByText(text).closest('[data-direction]')
@@ -78,6 +81,34 @@ describe('MessageList', () => {
 
     expect(screen.getByText('Нет соединения')).toBeInTheDocument()
   })
+
+  it('says that a message failed even when the reason is unknown', () => {
+    renderList([outgoing('failed')])
+
+    expect(screen.getByText('Сообщение не отправлено')).toBeInTheDocument()
+  })
+
+  it('offers to retry a failed message', async () => {
+    const { onRetry } = renderList([
+      outgoing('sent', { localId: 'out:1', text: 'Дошло' }),
+      outgoing('failed', { localId: 'out:2', text: 'Не дошло', error: 'Нет соединения' }),
+    ])
+
+    const buttons = screen.getAllByRole('button', { name: 'Повторить' })
+    expect(buttons).toHaveLength(1)
+    await userEvent.setup().click(buttons[0])
+
+    expect(onRetry).toHaveBeenCalledExactlyOnceWith('out:2')
+  })
+
+  it.each(['sending', 'sent', 'delivered', 'read'] as const)(
+    'does not offer to retry a %s message',
+    (status) => {
+      renderList([outgoing(status)])
+
+      expect(screen.queryByRole('button', { name: 'Повторить' })).not.toBeInTheDocument()
+    },
+  )
 
   it('shows markup in a message as plain text', () => {
     const text = '<b>жирный</b><script>alert(1)</script>'

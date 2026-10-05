@@ -11,6 +11,9 @@
   --color-accent-hover: #0068e0;
   --color-accent-text: #ffffff;
   --color-danger: #e5484d;
+  --color-warning-surface: #fff4d6;
+  --color-warning-border: #f2dfa6;
+  --color-warning-text: #6b4e00;
   --color-bubble-in: #ffffff;
   --color-bubble-out: #d8eaff;
   --color-pill: rgb(42 94 170 / 0.42);

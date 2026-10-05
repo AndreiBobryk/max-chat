@@ -81,6 +81,30 @@ export function describeDeliveryFailure(status: 'failed' | 'noAccount'): string 
   return status === 'noAccount' ? 'У этого номера нет аккаунта MAX' : 'Сообщение не доставлено'
 }
 
+// What a stateInstanceChanged notification means for the user; null when there is nothing to say.
+export function describeInstanceState(state: string): string | null {
+  switch (state) {
+    case 'authorized':
+      return null
+    case 'notAuthorized':
+      return 'Инстанс не авторизован в MAX. Отсканируйте QR-код в личном кабинете GREEN-API'
+    case 'starting':
+      return 'Инстанс запускается. Это может занять до 5 минут'
+    case 'blocked':
+      return 'Аккаунт MAX заблокирован'
+    case 'suspended':
+      return 'Мессенджер временно ограничил отправку сообщений с этого аккаунта'
+    case 'pendingPassword':
+      return 'Инстанс ждёт пароль двухфакторной авторизации. Введите его в личном кабинете GREEN-API'
+    default:
+      return `Состояние инстанса: ${state}`
+  }
+}
+
+export function describeQuotaNotice(description: string): string {
+  return withServerText('Лимит тарифа Developer: 3 чата в месяц', description)
+}
+
 function withServerText(text: string, serverText: string): string {
   return serverText ? `${text}. Ответ сервера: ${serverText}` : text
 }

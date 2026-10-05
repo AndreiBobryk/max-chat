@@ -34,9 +34,10 @@ export async function startNotificationPoller(options: PollerOptions): Promise<v
 
   while (!signal.aborted) {
     try {
-      // The first answer is wanted quickly: it decides whether the credentials work.
+      // Only an answer proves that the connection works, and an empty queue answers after the
+      // full wait. So the wait is short until an answer arrives: at sign-in and after a failure.
       const notification = await client.receiveNotification({
-        receiveTimeout: connected ? RECEIVE_TIMEOUT : MIN_RECEIVE_TIMEOUT,
+        receiveTimeout: status === 'online' ? RECEIVE_TIMEOUT : MIN_RECEIVE_TIMEOUT,
         signal,
       })
       if (signal.aborted) break

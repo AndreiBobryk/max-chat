@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useReducer, useRef } from 'react'
+import { useEffect, useEffectEvent, useMemo, useReducer, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { createGreenApiClient, MAX_MESSAGE_LENGTH } from '../api/greenApi.ts'
 import { startNotificationPoller } from '../api/poller.ts'
@@ -30,9 +30,19 @@ export function ChatProvider({ session, children }: ChatProviderProps) {
   const [state, dispatch] = useReducer(chatReducer, session.idInstance, loadChatState)
   const client = useMemo(() => createGreenApiClient(session), [session])
 
+  const [instanceState, setInstanceState] = useState<string | null>(null)
+  const [quotaNotice, setQuotaNotice] = useState<string | null>(null)
+
   const handleNotification = useEffectEvent((body: unknown) => {
-    const action = chatActionFromEvent(parseNotification(body))
-    if (action) dispatch(action)
+    const event = parseNotification(body)
+    if (event.type === 'instanceState') {
+      setInstanceState(event.state)
+    } else if (event.type === 'quotaExceeded') {
+      setQuotaNotice(event.description)
+    } else {
+      const action = chatActionFromEvent(event)
+      if (action) dispatch(action)
+    }
   })
   const isSigningIn = useEffectEvent(() => status === 'signingIn')
 
@@ -103,6 +113,9 @@ export function ChatProvider({ session, children }: ChatProviderProps) {
         return
       }
     },
+    instanceState,
+    quotaNotice,
+    dismissQuotaNotice: () => setQuotaNotice(null),
   }
 
   return <ChatContext value={value}>{children}</ChatContext>

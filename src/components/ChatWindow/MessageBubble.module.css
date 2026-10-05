@@ -69,10 +69,24 @@
 .error {
   max-width: min(78%, 480px);
   margin: 3px 4px 0;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 8px;
-  background: rgb(255 255 255 / 0.85);
+  background: rgb(255 255 255 / 0.9);
   color: var(--color-danger);
   font-size: var(--font-size-tiny);
   text-align: right;
+}
+
+.retry {
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  font-size: inherit;
+  font-weight: 600;
+}
+
+.retry:hover {
+  text-decoration: underline;
 }

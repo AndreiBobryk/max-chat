@@ -4,6 +4,8 @@ import type { GreenApiErrorKind } from '../api/errors.ts'
 import {
   describeConnectError,
   describeDeliveryFailure,
+  describeInstanceState,
+  describeQuotaNotice,
   describeSendError,
 } from './errorMessages.ts'
 
@@ -104,6 +106,35 @@ describe('describeSendError', () => {
     { name: 'an error that did not come from the API', error: new TypeError('boom'), expected: 'Не удалось отправить сообщение' },
   ])('describes $name', ({ error, expected }) => {
     expect(describeSendError(error)).toBe(expected)
+  })
+})
+
+describe('describeInstanceState', () => {
+  it('has nothing to say about an authorized instance', () => {
+    expect(describeInstanceState('authorized')).toBeNull()
+  })
+
+  it.each([
+    { state: 'notAuthorized', expected: 'Инстанс не авторизован в MAX' },
+    { state: 'starting', expected: 'Инстанс запускается' },
+    { state: 'blocked', expected: 'Аккаунт MAX заблокирован' },
+    { state: 'suspended', expected: 'временно ограничил отправку' },
+    { state: 'pendingPassword', expected: 'пароль двухфакторной авторизации' },
+    { state: 'somethingNew', expected: 'Состояние инстанса: somethingNew' },
+  ])('explains the "$state" state', ({ state, expected }) => {
+    expect(describeInstanceState(state)).toContain(expected)
+  })
+})
+
+describe('describeQuotaNotice', () => {
+  it('names the limit and quotes the server', () => {
+    expect(describeQuotaNotice('Only send/receive from: 10000000')).toBe(
+      'Лимит тарифа Developer: 3 чата в месяц. Ответ сервера: Only send/receive from: 10000000',
+    )
+  })
+
+  it('names the limit when the server gave no details', () => {
+    expect(describeQuotaNotice('')).toBe('Лимит тарифа Developer: 3 чата в месяц')
   })
 })
 

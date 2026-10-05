@@ -10,9 +10,10 @@ const STICK_THRESHOLD_PX = 80
 type MessageListProps = {
   messages: Message[]
   now: number
+  onRetry: (localId: string) => void
 }
 
-export function MessageList({ messages, now }: MessageListProps) {
+export function MessageList({ messages, now, onRetry }: MessageListProps) {
   const scroller = useRef<HTMLDivElement>(null)
   const stickToBottom = useRef(true)
   const previousCount = useRef(0)
@@ -53,7 +54,7 @@ export function MessageList({ messages, now }: MessageListProps) {
                   <span className={styles.pill}>{formatDayLabel(message.timestamp, now)}</span>
                 </div>
               )}
-              <MessageBubble message={message} />
+              <MessageBubble message={message} onRetry={() => onRetry(message.localId)} />
             </Fragment>
           )
         })}

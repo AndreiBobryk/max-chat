@@ -13,7 +13,12 @@ const STATUS_MARKS: Record<OutgoingStatus, { label: string; icon: ReactNode }> =
   failed: { label: 'Не отправлено', icon: <AlertIcon size={14} /> },
 }
 
-export function MessageBubble({ message }: { message: Message }) {
+type MessageBubbleProps = {
+  message: Message
+  onRetry: () => void
+}
+
+export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
   const isOutgoing = message.direction === 'out'
   const mark = isOutgoing ? STATUS_MARKS[message.status] : null
 
@@ -38,8 +43,13 @@ export function MessageBubble({ message }: { message: Message }) {
           )}
         </span>
       </div>
-      {isOutgoing && message.status === 'failed' && message.error && (
-        <p className={styles.error}>{message.error}</p>
+      {isOutgoing && message.status === 'failed' && (
+        <p className={styles.error}>
+          {message.error ?? 'Сообщение не отправлено'}
+          <button type="button" className={styles.retry} onClick={onRetry}>
+            Повторить
+          </button>
+        </p>
       )}
     </div>
   )

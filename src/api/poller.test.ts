@@ -147,7 +147,18 @@ describe('processing notifications', () => {
 
     await vi.advanceTimersByTimeAsync(1000)
 
-    expect(poller.log.slice(3)).toEqual(['receive:25', 'handle:{"receiptId":7}', 'delete:7', 'receive:25'])
+    expect(poller.log.slice(3)).toEqual(['receive:5', 'handle:{"receiptId":7}', 'delete:7', 'receive:25'])
+    expect(poller.statuses).toEqual(['online', 'reconnecting', 'online'])
+    await poller.stop()
+  })
+
+  it('asks for a short wait again after a failure, until an answer arrives', async () => {
+    const poller = setup([null, new GreenApiError('network'), new GreenApiError('network'), null])
+    await settle()
+    await vi.advanceTimersByTimeAsync(1000)
+    await vi.advanceTimersByTimeAsync(2000)
+
+    expect(poller.log).toEqual(['receive:5', 'receive:25', 'receive:5', 'receive:5', 'receive:25'])
     expect(poller.statuses).toEqual(['online', 'reconnecting', 'online'])
     await poller.stop()
   })
