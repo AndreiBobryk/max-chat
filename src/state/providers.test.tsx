@@ -352,7 +352,8 @@ describe('ending the session', () => {
 
     respondEverywhere(INSTANCE_HOST, () => new HttpResponse(null, { status: 401 }))
 
-    await waitFor(() => expect(session().status).toBe('signedOut'))
+    // The request already in flight is answered first; the next one gets the 401.
+    await waitFor(() => expect(session().status).toBe('signedOut'), { timeout: 4000 })
     expect(session().error).toBe('Не удалось войти: проверьте idInstance и apiTokenInstance')
     expect(loadSession()).toBeNull()
   })

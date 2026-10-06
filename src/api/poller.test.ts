@@ -6,7 +6,7 @@ import type { ReceivedNotification } from './types.ts'
 
 type Outcome = ReceivedNotification | null | Error
 // What the next receiveNotification call does; once the script ends, calls hang until aborted.
-type Step = Outcome | ((controller: AbortController) => Outcome)
+type Step = Outcome | ((controller: AbortController) => Outcome | Promise<Outcome>)
 
 function notification(receiptId: number): ReceivedNotification {
   return { receiptId, body: { receiptId } }
@@ -22,6 +22,8 @@ function setup(script: Step[], options: Partial<PollerOptions> = {}) {
   const log: string[] = []
   const statuses: PollerStatus[] = []
   const deleteFailures: Error[] = []
+  // What the next deleteNotification calls answer; true once the list is used up.
+  const deleteResults: boolean[] = []
   const controller = new AbortController()
   const onFatal = vi.fn()
   let inFlight = 0
@@ -43,7 +45,7 @@ function setup(script: Step[], options: Partial<PollerOptions> = {}) {
         log.push(`receive:${receiveTimeout}`)
         const step = script.shift()
         if (step === undefined) return untilAborted(signal)
-        const outcome = typeof step === 'function' ? step(controller) : step
+        const outcome = await (typeof step === 'function' ? step(controller) : step)
         if (outcome instanceof Error) throw outcome
         return outcome
       }),
@@ -52,7 +54,7 @@ function setup(script: Step[], options: Partial<PollerOptions> = {}) {
         log.push(`delete:${receiptId}`)
         const failure = deleteFailures.shift()
         if (failure) throw failure
-        return true
+        return deleteResults.shift() ?? true
       }),
   }
 
@@ -69,6 +71,7 @@ function setup(script: Step[], options: Partial<PollerOptions> = {}) {
     log,
     statuses,
     deleteFailures,
+    deleteResults,
     controller,
     onFatal,
     done,
@@ -292,12 +295,95 @@ describe('retrying', () => {
   })
 
   it('reports each status change once', async () => {
-    const poller = setup([null, null, notification(1), new GreenApiError('timeout'), null, null])
+    const poller = setup([null, notification(1), notification(2), new GreenApiError('timeout'), null, notification(3)])
     await settle()
     await vi.advanceTimersByTimeAsync(1000)
 
     expect(poller.statuses).toEqual(['online', 'reconnecting', 'online'])
     await poller.stop()
+  })
+})
+
+describe('a queue that does not make the request wait', () => {
+  const afterFullWait = () =>
+    new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 25_000)
+    })
+
+  it('does not flood a server that answers an empty queue at once', async () => {
+    const poller = setup([null, null, null, null])
+    await settle()
+    // One immediate repeat is allowed: the first short poll at sign-in is expected to be quick.
+    expect(poller.receiveCount()).toBe(2)
+
+    await vi.advanceTimersByTimeAsync(999)
+    expect(poller.receiveCount()).toBe(2)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(poller.receiveCount()).toBe(3)
+
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(poller.receiveCount()).toBe(4)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(poller.receiveCount()).toBe(5)
+    expect(poller.statuses).toEqual(['online'])
+    await poller.stop()
+  })
+
+  it('asks again at once when the empty answer took the full wait', async () => {
+    const poller = setup([afterFullWait, afterFullWait])
+    await settle()
+    expect(poller.receiveCount()).toBe(1)
+
+    await vi.advanceTimersByTimeAsync(25_000)
+    expect(poller.receiveCount()).toBe(2)
+    await vi.advanceTimersByTimeAsync(25_000)
+    expect(poller.receiveCount()).toBe(3)
+    await poller.stop()
+  })
+
+  it('drains a full queue without pauses', async () => {
+    const poller = setup([notification(1), notification(2), notification(3), notification(4)])
+    await settle()
+
+    expect(poller.receiveCount()).toBe(5)
+    await poller.stop()
+  })
+
+  it('goes back to full speed once a notification arrives', async () => {
+    const poller = setup([null, null, notification(1), null])
+    await settle()
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(poller.log.slice(2)).toEqual(['receive:25', 'handle:{"receiptId":1}', 'delete:1', 'receive:25', 'receive:25'])
+    await poller.stop()
+  })
+
+  it('pauses before receiving again when a notification could not be deleted', async () => {
+    const poller = setup([notification(7), notification(7), notification(8)])
+    poller.deleteResults.push(false, false)
+    await settle()
+    expect(poller.log).toEqual(['receive:5', 'handle:{"receiptId":7}', 'delete:7'])
+
+    await vi.advanceTimersByTimeAsync(999)
+    expect(poller.receiveCount()).toBe(1)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(poller.log.slice(3)).toEqual(['receive:25', 'handle:{"receiptId":7}', 'delete:7'])
+
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(poller.log.slice(6)).toEqual(['receive:25', 'handle:{"receiptId":8}', 'delete:8', 'receive:25'])
+    expect(poller.statuses).toEqual(['online'])
+    await poller.stop()
+  })
+
+  it('stops promptly when aborted during the pause', async () => {
+    const poller = setup([null, null, null])
+    await settle()
+    expect(poller.receiveCount()).toBe(2)
+
+    await poller.stop()
+    await vi.advanceTimersByTimeAsync(60_000)
+
+    expect(poller.receiveCount()).toBe(2)
   })
 })
 

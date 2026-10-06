@@ -1,8 +1,10 @@
 import { delay, http, HttpResponse } from 'msw'
 import { server } from './server.ts'
 
-// How long the fake long poll holds an empty queue; the real API holds it for seconds.
-const LONG_POLL_MS = 50
+// How long the fake holds a request while the queue is empty. Like the real API it holds for the
+// requested wait, only scaled down: the short wait of a first poll, and a longer one after it.
+const SHORT_POLL_MS = 50
+const LONG_POLL_MS = 1500
 
 export type FakeCall =
   | { method: 'receiveNotification'; receiveTimeout: string | null }
@@ -33,15 +35,13 @@ export function fakeGreenApi(options: FakeGreenApiOptions = {}) {
 
   server.use(
     http.get(`${base}/receiveNotification/${apiTokenInstance}`, async ({ request }) => {
-      calls.push({
-        method: 'receiveNotification',
-        receiveTimeout: new URL(request.url).searchParams.get('receiveTimeout'),
-      })
+      const receiveTimeout = new URL(request.url).searchParams.get('receiveTimeout')
+      calls.push({ method: 'receiveNotification', receiveTimeout })
       if (queue.length === 0) {
         const pushed = new Promise<void>((resolve) => {
           wake = resolve
         })
-        await Promise.race([pushed, delay(LONG_POLL_MS)])
+        await Promise.race([pushed, delay(receiveTimeout === '5' ? SHORT_POLL_MS : LONG_POLL_MS)])
       }
       return HttpResponse.json(queue[0] ?? null)
     }),

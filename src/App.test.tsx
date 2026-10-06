@@ -178,8 +178,11 @@ describe('App', () => {
     const status = screen.getByRole('status')
     expect(status).toBeEmptyDOMElement()
 
+    // The request already in flight is answered first; the next one meets the lost connection.
     isOffline = true
-    await waitFor(() => expect(status).toHaveTextContent('Нет соединения, переподключаемся…'))
+    await waitFor(() => expect(status).toHaveTextContent('Нет соединения, переподключаемся…'), {
+      timeout: 4000,
+    })
     expect(screen.getByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
 
     isOffline = false
