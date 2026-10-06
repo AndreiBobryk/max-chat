@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "deploy": "tsc -b && vite build --base=/max-chat/ && node scripts/publish-pages.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },
