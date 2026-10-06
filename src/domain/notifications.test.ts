@@ -70,7 +70,6 @@ describe('incoming text messages', () => {
 
 describe('incoming messages of other types', () => {
   it.each([
-    { name: 'an image', body: incomingImage },
     { name: 'a sticker', body: incomingSticker },
     { name: 'an audio message', body: incomingAudio },
   ])('marks $name as unsupported', ({ body }) => {
@@ -80,6 +79,23 @@ describe('incoming messages of other types', () => {
       kind: 'unsupported',
       text: '',
     })
+  })
+
+  it('keeps the caption of an image it cannot show', () => {
+    expect(parseNotification(incomingImage)).toMatchObject({
+      type: 'incomingMessage',
+      kind: 'unsupported',
+      text: 'Подпись',
+    })
+  })
+
+  it('has no text for an image without a caption', () => {
+    const body = {
+      ...incomingImage,
+      messageData: { typeMessage: 'imageMessage', fileMessageData: { caption: '' } },
+    }
+
+    expect(parseNotification(body)).toMatchObject({ kind: 'unsupported', text: '' })
   })
 
   it('marks a text message without text as unsupported', () => {

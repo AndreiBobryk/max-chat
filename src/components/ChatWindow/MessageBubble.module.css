@@ -30,10 +30,13 @@
   background: var(--color-bubble-out);
 }
 
-.text,
-.unsupported {
+.content {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+.text,
+.unsupported {
   margin: 0;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
@@ -42,6 +45,11 @@
 .unsupported {
   color: var(--color-text-muted);
   font-style: italic;
+}
+
+/* The caption of an attachment that could not be shown. */
+.unsupported + .text {
+  margin-top: 2px;
 }
 
 .meta {

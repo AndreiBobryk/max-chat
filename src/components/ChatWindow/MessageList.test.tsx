@@ -130,6 +130,16 @@ describe('MessageList', () => {
     expect(screen.getByText('Сообщение этого типа не поддерживается')).toBeInTheDocument()
   })
 
+  it('shows the caption of an unsupported attachment under the placeholder', () => {
+    renderList([incoming({ kind: 'unsupported', text: 'Подпись к фото' })])
+
+    const paragraphs = [...(rowOf('Подпись к фото')?.querySelectorAll('p') ?? [])]
+    expect(paragraphs.map((paragraph) => paragraph.textContent)).toEqual([
+      'Сообщение этого типа не поддерживается',
+      'Подпись к фото',
+    ])
+  })
+
   it('separates the messages of different days', () => {
     renderList([
       incoming({ localId: 'in:1', text: 'Позавчера', timestamp: at(3, 10) }),

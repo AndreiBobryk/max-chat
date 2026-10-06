@@ -78,7 +78,8 @@ function parseIncomingMessage(body: Record<string, unknown>, now: number): Notif
       [sender.senderContactName, sender.senderName, sender.chatName].find(isNonEmptyString) ?? '',
     timestamp: toMilliseconds(body.timestamp) ?? now,
     kind: text === null ? 'unsupported' : 'text',
-    text: text ?? '',
+    // A photo or a video may come with a caption: that text is kept even though the file is not.
+    text: text ?? readString(message.fileMessageData, 'caption') ?? '',
   }
 }
 

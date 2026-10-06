@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Message, OutgoingStatus } from '../../domain/chatReducer.ts'
-import { messageText } from '../../domain/messageText.ts'
+import { UNSUPPORTED_MESSAGE_TEXT } from '../../domain/messageText.ts'
 import { formatTime } from '../../domain/time.ts'
 import { AlertIcon, CheckIcon, ClockIcon, DoubleCheckIcon } from '../ui/icons.tsx'
 import styles from './MessageBubble.module.css'
@@ -25,9 +25,12 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
   return (
     <div className={styles.row} data-direction={message.direction}>
       <div className={styles.bubble}>
-        <p className={message.kind === 'unsupported' ? styles.unsupported : styles.text}>
-          {messageText(message)}
-        </p>
+        <div className={styles.content}>
+          {message.kind === 'unsupported' && (
+            <p className={styles.unsupported}>{UNSUPPORTED_MESSAGE_TEXT}</p>
+          )}
+          {message.text !== '' && <p className={styles.text}>{message.text}</p>}
+        </div>
         <span className={styles.meta}>
           <time>{formatTime(message.timestamp)}</time>
           {isOutgoing && mark && (

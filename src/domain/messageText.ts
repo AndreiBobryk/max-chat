@@ -2,7 +2,8 @@ import type { Message } from './chatReducer.ts'
 
 export const UNSUPPORTED_MESSAGE_TEXT = 'Сообщение этого типа не поддерживается'
 
-// What to show for a message, in a bubble or in the chat list.
+// One line that stands for a message in the chat list: its text, the caption of an unsupported
+// attachment, or the placeholder when there is no text at all.
 export function messageText(message: Message): string {
-  return message.kind === 'unsupported' ? UNSUPPORTED_MESSAGE_TEXT : message.text
+  return message.text === '' ? UNSUPPORTED_MESSAGE_TEXT : message.text
 }

@@ -74,6 +74,31 @@ describe('ChatList', () => {
     expect(items()[2]).toHaveTextContent('Сообщений пока нет')
   })
 
+  it.each([
+    { name: 'the caption of an unsupported attachment', text: 'Подпись к фото', preview: 'Подпись к фото' },
+    { name: 'a placeholder for an attachment without a caption', text: '', preview: 'Сообщение этого типа не поддерживается' },
+  ])('previews $name', ({ text, preview }) => {
+    const attachment: Message = {
+      localId: 'd',
+      idMessage: '2',
+      direction: 'in',
+      kind: 'unsupported',
+      text,
+      timestamp: TODAY,
+    }
+    render(
+      <ChatList
+        chats={[named]}
+        messages={{ [named.key]: [attachment] }}
+        activeChatKey={null}
+        now={NOW}
+        onSelect={vi.fn()}
+      />,
+    )
+
+    expect(items()[0]).toHaveTextContent(preview)
+  })
+
   it('shows the time for today and the date for earlier days', () => {
     renderList()
 
